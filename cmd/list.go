@@ -1,10 +1,23 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 )
+
+type Value struct {
+  Url string `json:"url"`
+  Status string `json:"status"`
+  Title string `json:"title"`
+}
+
+type ResponseBody struct {
+  Count int `json:"count"`
+  Value []Value `json:"value"`
+}
 
 var projectName string
 
@@ -16,9 +29,16 @@ var listCmd = &cobra.Command{
 }
 
 func run(projectName string) {
-	url := fmt.Sprintf("https://dev.azure.com/%s/_apis/git/pullrequests?api-version=7.0", projectName)
+	url := fmt.Sprintf("https://dev.azure.com/wilzkelvin/%s/_apis/git/pullrequests?api-version=7.0", projectName)
 
-	GetRequest(url, "crw77k4pvxjxw3cc3jek3szmbi6w2uhq5angyskijrludjgwb5fq")
+  bodyJSON := ResponseBody{}
+  body, err :=	GetRequest(url, ":dh5fuwjelg6l33fagckzmn3jwmcvyian4x6lmcnzfrwdthg2p5nq")
+  if err != nil {
+    os.Exit(1)
+  }
+  
+  json.Unmarshal([]byte(body), &bodyJSON)
+  fmt.Println(bodyJSON)
 }
 
 func init() {

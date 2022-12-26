@@ -1,11 +1,18 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
+    "github.com/charmbracelet/bubbles/textinput"
+    tea "github.com/charmbracelet/bubbletea"
+)
 
-	"github.com/spf13/cobra"
+type model struct {
+  textInput textinput.Model
+  err error
+}
+
+type (
+  errMsg error
 )
 
 type Value struct {
@@ -19,29 +26,46 @@ type ResponseBody struct {
   Value []Value `json:"value"`
 }
 
-var projectName string
+func InitialModel() model {
+  ti := textinput.New()
+  ti.Placeholder = "PAT (Personal Access Token)"
+  ti.Focus()
+  ti.CharLimit = 150
+  ti.Width = 25
 
-var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all opened Pull Requests",
-	Long:  "List command provides an list of all opened Pull Requests from Azure Devops selected Project",
-	Run:   func(cmd *cobra.Command, args []string) { run(projectName) },
-}
-
-func run(projectName string) {
-	url := fmt.Sprintf("https://dev.azure.com/wilzkelvin/%s/_apis/git/pullrequests?api-version=7.0", projectName)
-
-  bodyJSON := ResponseBody{}
-  body, err :=	GetRequest(url, ":dh5fuwjelg6l33fagckzmn3jwmcvyian4x6lmcnzfrwdthg2p5nq")
-  if err != nil {
-    os.Exit(1)
+  return model{
+    textInput: ti,
+    err: nil,
   }
-  
-  json.Unmarshal([]byte(body), &bodyJSON)
-  fmt.Println(bodyJSON)
 }
 
-func init() {
-	listCmd.Flags().StringVarP(&projectName, "project", "p", "", "Source project to list PR's")
-	rootCmd.AddCommand(listCmd)
+func (m model) Init() tea.Cmd {
+  return textinput.Blink
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+  var cmd tea.Cmd
+
+  switch msg := msg.(type) {
+    case tea.KeyMsg:
+      switch msg.Type {
+        case tea.KeyEnter, tea.KeyCtrlC, tea.KeyEsc:
+          return m, tea.Quit
+      }
+
+    case errMsg:
+      m.err = msg
+      return m, nil
+  }
+
+  m.textInput, cmd = m.textInput.Update(msg)
+  return m, cmd
+}
+
+func (m model) View() string {
+  return fmt.Sprintf(
+    "Enter your Personal Access Token from Azure DevOps\n\n%s\n\n%s",
+    m.textInput.View(),
+    "esc exits the terminal",
+  ) + "\n"
 }

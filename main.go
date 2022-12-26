@@ -1,7 +1,15 @@
 package main
 
-import "github.com/WilliamKSilva/azure-pullrequests-cli/cmd"
+import (
+	"log"
+
+	cmd "github.com/WilliamKSilva/azure-pullrequests-cli/cmd"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func main() {
-	cmd.Execute()
+    p := tea.NewProgram(cmd.InitialModel())
+    if _, err := p.Run(); err != nil {
+      log.Fatal(err)
+    }
 }

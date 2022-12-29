@@ -7,6 +7,17 @@ import (
 	"net/http"
 )
 
+type Value struct {
+  Url string `json:"url"`
+  Status string `json:"status"`
+  Title string `json:"title"`
+}
+
+type ResponseBody struct {
+  Count int `json:"count"`
+  Value []Value `json:"value"`
+}
+
 var client = &http.Client{}
 
 func EncodeToBase64(value string) string {
@@ -46,3 +57,4 @@ func GetRequest(url string, token string) (string, error) {
 
 	return body, nil 
 }
+

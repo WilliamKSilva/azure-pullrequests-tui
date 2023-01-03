@@ -2,7 +2,7 @@ package ui
 
 import (
     "fmt"
-
+    project "github.com/WilliamKSilva/azure-pullrequests-cli/project"
     "github.com/charmbracelet/bubbles/list"
     "github.com/charmbracelet/bubbles/textinput"
     tea "github.com/charmbracelet/bubbletea"
@@ -13,10 +13,7 @@ func (i item) Title() string { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-var items []list.Item =  []list.Item{
-    item{title: "teste", desc: "test"},
-    item{title: "teste", desc: "test"},
-}
+var items []list.Item 
 
 func InitialModel() model {
     m := model{
@@ -42,7 +39,7 @@ func newInput (placeholder string) (textinput.Model) {
     var t textinput.Model
 
     t = textinput.New()
-    t.CharLimit = 32
+    t.CharLimit = 70
 
     t.Placeholder = placeholder
     t.Focus()
@@ -67,11 +64,22 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
         case "enter":
             switch m.mode {
             case inputOrganization:
-                m.inputOrganization.data = msg.String()
+                m.inputOrganization.data = string(Mode(m.inputOrganization.input.Value())) 
                 m.mode = inputPatToken
             case inputPatToken:
-                m.inputPatToken.data  = msg.String()
-                m.mode = listProjects
+                m.inputPatToken.data = string(Mode(m.inputPatToken.input.Value()))
+
+                projects, err := project.FetchProjects(m.inputPatToken.data, m.inputOrganization.data)
+
+                if err != nil {
+                    return m, tea.Quit
+                }
+
+                for _, s := range projects.Value {
+                    newProject := item{title: s.Title, desc: s.Url}
+                    items = append(items, newProject)
+                }
+
             }
 
         }
@@ -86,6 +94,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case inputPatToken:
         m.inputPatToken.input, cmd = m.inputPatToken.input.Update(msg)
     case listProjects:
+        fmt.Println(items)
         m.list, cmd = m.list.Update(msg)
     }
     return m, cmd

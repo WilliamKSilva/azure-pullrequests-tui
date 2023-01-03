@@ -22,9 +22,9 @@ type ResponseBody struct {
 var client = &http.Client{}
 
 func encodeToBase64(value string) string {
-	decoded := base64.StdEncoding.EncodeToString([]byte(value))
+	encoded := base64.StdEncoding.EncodeToString([]byte(value))
 
-	return decoded
+	return encoded 
 }
 
 func parseJSON(res *http.Response) string {
@@ -61,7 +61,10 @@ func getRequest(url string, token string) (string, error) {
 
 func FetchProjects(token string, organization string) (*ResponseBody, error) {
     url := fmt.Sprintf("https://dev.azure.com/%s/_apis/projects?api-version=7.0", organization)  
-    body, err := getRequest(url, token) 
+    patToken := fmt.Sprintf(":%s", token)
+    body, err := getRequest(url, patToken) 
+
+    fmt.Printf(body)
 
     if err != nil {
         return nil, err

@@ -24,7 +24,6 @@ type inputModel struct {
     data string
 }
 
-
 type model struct {
     list list.Model
     inputPatToken inputModel

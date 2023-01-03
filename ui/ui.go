@@ -3,7 +3,6 @@ package ui
 import (
     "fmt"
 
-    "github.com/WilliamKSilva/azure-pullrequests-cli/cmd"
     "github.com/charmbracelet/bubbles/list"
     "github.com/charmbracelet/bubbles/textinput"
     tea "github.com/charmbracelet/bubbletea"
@@ -14,24 +13,11 @@ func (i item) Title() string { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-func fetchProjects(token string, organization string) (string, error) {
-    url := "https://dev.azure.com/{organization}/_apis/projects?api-version=7.0"  
-    body, err := cmd.GetRequest(url, token) 
-
-    if err != nil {
-        return "", err
-    }
-
-    return body, nil
+var items []list.Item =  []list.Item{
+    item{title: "teste", desc: "test"},
 }
 
 func InitialModel() model {
-    items := []list.Item{
-        item{title: "Test", desc: "Test"},
-    }
-
-    li := list.New(items, list.NewDefaultDelegate(), 0, 0)
-
     m := model{
         inputPatToken: inputModel{
             newInput("Enter your PAT (Personal Access Token)"),
@@ -41,7 +27,7 @@ func InitialModel() model {
             newInput("Enter your organization name"),
             "",
         },
-        list: li,
+        list: list.New(items, list.NewDefaultDelegate(), 0, 0),
         err: nil,
         mode: inputOrganization,
     }
@@ -82,6 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.mode = inputPatToken
             case inputPatToken:
                m.inputPatToken.data  = msg.String()
+               m.mode = listProjects
             }
         }
     }
@@ -90,7 +77,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case inputOrganization:
         m.inputOrganization.input, cmd = m.inputOrganization.input.Update(msg)
     case inputPatToken:
-        m.inputOrganization.input, cmd = m.inputOrganization.input.Update(msg)
+        m.inputPatToken.input, cmd = m.inputPatToken.input.Update(msg)
+    case listProjects:
+        fmt.Printf("teste")
+
+       m.list, cmd = m.list.Update(msg)
     }
     return m, cmd
 }
@@ -109,6 +100,8 @@ func (m model) View() string {
             m.inputPatToken.input.View(),
             "esc exits the terminal",
         ) + "\n"
+    case listProjects:
+        return docStyle.Render(m.list.View())
     }
 
     return ""

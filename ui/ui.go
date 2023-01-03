@@ -15,6 +15,7 @@ func (i item) FilterValue() string { return i.title }
 
 var items []list.Item =  []list.Item{
     item{title: "teste", desc: "test"},
+    item{title: "teste", desc: "test"},
 }
 
 func InitialModel() model {
@@ -31,6 +32,8 @@ func InitialModel() model {
         err: nil,
         mode: inputOrganization,
     }
+
+    m.list.Title = "Azure DevOps Projects"
 
     return m
 }
@@ -67,10 +70,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.inputOrganization.data = msg.String()
                 m.mode = inputPatToken
             case inputPatToken:
-               m.inputPatToken.data  = msg.String()
-               m.mode = listProjects
+                m.inputPatToken.data  = msg.String()
+                m.mode = listProjects
             }
+
         }
+    case tea.WindowSizeMsg:
+        h, v := docStyle.GetFrameSize()
+        m.list.SetSize(msg.Width-h, msg.Height-v)
     }
 
     switch m.mode {
@@ -79,9 +86,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case inputPatToken:
         m.inputPatToken.input, cmd = m.inputPatToken.input.Update(msg)
     case listProjects:
-        fmt.Printf("teste")
-
-       m.list, cmd = m.list.Update(msg)
+        m.list, cmd = m.list.Update(msg)
     }
     return m, cmd
 }

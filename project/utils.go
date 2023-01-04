@@ -10,8 +10,9 @@ import (
 
 type Value struct {
   Url string `json:"url"`
+  Description string `json:"description"`
   Status string `json:"status"`
-  Title string `json:"title"`
+  Name string `json:"name"`
 }
 
 type ResponseBody struct {
@@ -63,8 +64,6 @@ func FetchProjects(token string, organization string) (*ResponseBody, error) {
     url := fmt.Sprintf("https://dev.azure.com/%s/_apis/projects?api-version=7.0", organization)  
     patToken := fmt.Sprintf(":%s", token)
     body, err := getRequest(url, patToken) 
-
-    fmt.Printf(body)
 
     if err != nil {
         return nil, err

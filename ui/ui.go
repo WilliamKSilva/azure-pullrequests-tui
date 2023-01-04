@@ -13,8 +13,6 @@ func (i item) Title() string { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-var items []list.Item 
-
 func InitialModel() model {
     m := model{
         inputPatToken: inputModel{
@@ -25,7 +23,7 @@ func InitialModel() model {
             newInput("Enter your organization name"),
             "",
         },
-        list: list.New(items, list.NewDefaultDelegate(), 0, 0),
+        list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
         err: nil,
         mode: inputOrganization,
     }
@@ -75,17 +73,20 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     return m, tea.Quit
                 }
 
+                var projectsItems []list.Item
+
                 for _, s := range projects.Value {
-                    newProject := item{title: s.Title, desc: s.Url}
-                    items = append(items, newProject)
+                    newProject := item{title: s.Name, desc: s.Description}
+                    projectsItems = append(projectsItems, newProject)
                 }
 
-            }
+                m.list = list.New(projectsItems, list.NewDefaultDelegate(), 0, 0)
+                m.list.Title = "Select a Azure DevOps project to track"
+                m.list.SetSize(100, 50)
 
+                m.mode = listProjects
+            }
         }
-    case tea.WindowSizeMsg:
-        h, v := docStyle.GetFrameSize()
-        m.list.SetSize(msg.Width-h, msg.Height-v)
     }
 
     switch m.mode {
@@ -94,7 +95,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case inputPatToken:
         m.inputPatToken.input, cmd = m.inputPatToken.input.Update(msg)
     case listProjects:
-        fmt.Println(items)
         m.list, cmd = m.list.Update(msg)
     }
     return m, cmd

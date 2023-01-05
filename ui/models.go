@@ -24,13 +24,7 @@ type inputModel struct {
     data string
 }
 
-type model struct {
-    list list.Model
-    inputPatToken inputModel
-    inputOrganization inputModel 
-    mode Mode
-    err error
-}
+
 
 type (
     errMsg error

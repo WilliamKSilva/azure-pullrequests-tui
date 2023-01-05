@@ -2,7 +2,6 @@ package ui
 
 import (
     "fmt"
-    project "github.com/WilliamKSilva/azure-pullrequests-cli/project"
     "github.com/charmbracelet/bubbles/list"
     "github.com/charmbracelet/bubbles/textinput"
     tea "github.com/charmbracelet/bubbletea"
@@ -12,6 +11,16 @@ import (
 func (i item) Title() string { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
+
+type model struct {
+    list list.Model
+    inputPatToken inputModel
+    inputOrganization inputModel 
+    mode Mode
+    err error
+}
+
+var projects *Projects
 
 func InitialModel() model {
     m := model{
@@ -33,19 +42,6 @@ func InitialModel() model {
     return m
 }
 
-func newInput (placeholder string) (textinput.Model) {
-    var t textinput.Model
-
-    t = textinput.New()
-    t.CharLimit = 70
-
-    t.Placeholder = placeholder
-    t.Focus()
-
-    t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-
-    return t
-}
 
 func (m model) Init() tea.Cmd {
     return nil
@@ -67,7 +63,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             case inputPatToken:
                 m.inputPatToken.data = string(Mode(m.inputPatToken.input.Value()))
 
-                projects, err := project.FetchProjects(m.inputPatToken.data, m.inputOrganization.data)
+
+                err := projects.getProjects(m.inputPatToken.data, m.inputOrganization.data)
 
                 if err != nil {
                     return m, tea.Quit
@@ -119,4 +116,18 @@ func (m model) View() string {
     }
 
     return ""
+}
+
+func newInput (placeholder string) (textinput.Model) {
+    var t textinput.Model
+
+    t = textinput.New()
+    t.CharLimit = 70
+
+    t.Placeholder = placeholder
+    t.Focus()
+
+    t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+    return t
 }

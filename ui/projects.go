@@ -19,16 +19,18 @@ type Projects struct {
   Value []Value `json:"value"`
 }
 
-func(p *Projects) getProjects(token string, organization string) (error) {
+func getProjects(token string, organization string) (*Projects, error)  {
+    var projects *Projects
+
     url := fmt.Sprintf("https://dev.azure.com/%s/_apis/projects?api-version=7.0", organization)  
     patToken := fmt.Sprintf(":%s", token)
-    body, err := utils.GetRequest(url, patToken) 
 
+    body, err := utils.GetRequest(url, patToken) 
     if err != nil {
-        return nil
+        return nil, err 
     }
 
-    json.Unmarshal([]byte(*body), p)
+    json.Unmarshal([]byte(*body), &projects)
 
-    return nil
+    return projects, nil 
 }

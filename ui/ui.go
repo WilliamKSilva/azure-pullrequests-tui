@@ -8,12 +8,13 @@ import (
     "github.com/charmbracelet/lipgloss"
 )
 
-func (i item) Title() string { return i.title }
-func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
+func (i item) Title() string { return i.title }
+func (i item) Description() string { return i.desc}
 
 type model struct {
-    list list.Model
+    listProjects listModel
+    listPullRequests listModel 
     inputPatToken inputModel
     inputOrganization inputModel 
     mode Mode
@@ -32,12 +33,17 @@ func InitialModel() model {
             newInput("Enter your organization name"),
             "",
         },
-        list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
+        listProjects: listModel{
+            list: list.New(nil, list.NewDefaultDelegate(), 0, 0), 
+            data: "",
+        },
+        listPullRequests: listModel{
+            list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
+            data: "",
+        },
         err: nil,
         mode: inputOrganization,
     }
-
-    m.list.Title = "Azure DevOps Projects"
 
     return m
 }
@@ -62,9 +68,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.mode = inputPatToken
             case inputPatToken:
                 m.inputPatToken.data = string(Mode(m.inputPatToken.input.Value()))
-
-
-                err := projects.getProjects(m.inputPatToken.data, m.inputOrganization.data)
+                projects, err := getProjects(m.inputPatToken.data, m.inputOrganization.data)
 
                 if err != nil {
                     return m, tea.Quit
@@ -73,15 +77,38 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 var projectsItems []list.Item
 
                 for _, s := range projects.Value {
-                    newProject := item{title: s.Name, desc: s.Description}
+                    newProject := item{title: s.Name, desc: s.Description }
                     projectsItems = append(projectsItems, newProject)
                 }
 
-                m.list = list.New(projectsItems, list.NewDefaultDelegate(), 0, 0)
-                m.list.Title = "Select a Azure DevOps project to track"
-                m.list.SetSize(100, 50)
+                m.listProjects.list = list.New(projectsItems, list.NewDefaultDelegate(), 0, 0)
+                m.listProjects.list.Title= "Azure DevOps Projects" 
+                m.listProjects.list.SetSize(50, 50)
 
-                m.mode = listProjects
+                selectedItem := m.listProjects.list.SelectedItem()
+                m.listProjects.data = selectedItem.FilterValue() 
+
+                m.mode = listProjects 
+            case listProjects:
+                pullRequests, err := getPullRequests(m.inputPatToken.data, m.inputOrganization.data, m.listProjects.data)
+
+                if err != nil {
+                    return m, tea.Quit
+                }
+
+                var pullRequestsItems []list.Item
+
+                for _, s := range pullRequests.Value {
+                    desc := fmt.Sprintf("Repo: %s/Status: %s", s.Repository.Name, s.Status)
+                    newPullRequest := item{title: s.Title, desc: desc }
+                    pullRequestsItems = append(pullRequestsItems, newPullRequest)
+                }
+
+                m.listPullRequests.list = list.New(pullRequestsItems, list.NewDefaultDelegate(), 0, 0)
+                m.listPullRequests.list.Title= "Azure DevOps avaiable PullRequests" 
+                m.listPullRequests.list.SetSize(50, 50)
+
+                m.mode = listPullRequests
             }
         }
     }
@@ -92,8 +119,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case inputPatToken:
         m.inputPatToken.input, cmd = m.inputPatToken.input.Update(msg)
     case listProjects:
-        m.list, cmd = m.list.Update(msg)
+        m.listProjects.list, cmd = m.listProjects.list.Update(msg)
+    case listPullRequests:
+        m.listPullRequests.list, cmd = m.listPullRequests.list.Update(msg)
     }
+
     return m, cmd
 }
 
@@ -112,7 +142,9 @@ func (m model) View() string {
             "esc exits the terminal",
         ) + "\n"
     case listProjects:
-        return docStyle.Render(m.list.View())
+        return docStyle.Render(m.listProjects.list.View())
+    case listPullRequests:
+        return docStyle.Render(m.listPullRequests.list.View())
     }
 
     return ""

@@ -13,6 +13,7 @@ import (
 var client = &http.Client{}
 
 func GetRequest(url string, token string) (*string, error) {
+
     if (url == "" || token == "") {
         return nil, errors.New("missing arguments")
     }
@@ -33,6 +34,7 @@ func GetRequest(url string, token string) (*string, error) {
 		return nil, err 
 	}
 
+    defer res.Body.Close()
 	body := parseJSON(res)
 
 	return &body, nil 

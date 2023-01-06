@@ -11,20 +11,19 @@ type Mode string
 const (
     inputPatToken Mode = "inputPatToken"
     inputOrganization Mode = "inputOrganization"
-    listProjects Mode = "list"
+    listProjects Mode = "listProjects"
+    listPullRequests Mode = "listPullRequests"
 )
-
-type inputData struct {
-    inputPatToken string
-    inputOrganization string
-}
 
 type inputModel struct {
     input textinput.Model
     data string
 }
 
-
+type listModel struct {
+    list list.Model
+    data string
+}
 
 type (
     errMsg error

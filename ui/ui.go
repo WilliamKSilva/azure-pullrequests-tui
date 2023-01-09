@@ -1,11 +1,12 @@
 package ui
 
 import (
-    "fmt"
-    "github.com/charmbracelet/bubbles/list"
-    "github.com/charmbracelet/bubbles/textinput"
-    tea "github.com/charmbracelet/bubbletea"
-    "github.com/charmbracelet/lipgloss"
+	"fmt"
+
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 func (i item) FilterValue() string { return i.title }
@@ -21,8 +22,6 @@ type model struct {
     err error
 }
 
-var projects *Projects
-
 func InitialModel() model {
     m := model{
         inputPatToken: inputModel{
@@ -33,24 +32,28 @@ func InitialModel() model {
             newInput("Enter your organization name"),
             "",
         },
-        listProjects: listModel{
-            list: list.New(nil, list.NewDefaultDelegate(), 0, 0), 
-            data: "",
-        },
-        listPullRequests: listModel{
-            list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
-            data: "",
-        },
-        err: nil,
         mode: inputOrganization,
     }
 
     return m
 }
 
+func newInput (placeholder string) (textinput.Model) {
+    var t textinput.Model
+
+    t = textinput.New()
+    t.CharLimit = 70
+
+    t.Placeholder = placeholder
+    t.Focus()
+
+    t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+
+    return t
+}
 
 func (m model) Init() tea.Cmd {
-    return nil
+    return nil 
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -110,6 +113,27 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
                 m.mode = listPullRequests
             }
+        case "r":
+            switch m.mode {
+            case listPullRequests:
+                pullRequests, err := getPullRequests(m.inputPatToken.data, m.inputOrganization.data, m.listProjects.data)
+
+                if err != nil {
+                    return m, tea.Quit
+                }
+
+                var pullRequestsItems []list.Item
+
+                for _, s := range pullRequests.Value {
+                    desc := fmt.Sprintf("Repo: %s/Status: %s", s.Repository.Name, s.Status)
+                    newPullRequest := item{title: s.Title, desc: desc }
+                    pullRequestsItems = append(pullRequestsItems, newPullRequest)
+                }
+
+                m.listPullRequests.list.SetItems(pullRequestsItems) 
+                cmd := m.listPullRequests.list.NewStatusMessage(statusMessageStyle("Refresh"))
+                return m, cmd
+            }
         }
     }
 
@@ -150,16 +174,3 @@ func (m model) View() string {
     return ""
 }
 
-func newInput (placeholder string) (textinput.Model) {
-    var t textinput.Model
-
-    t = textinput.New()
-    t.CharLimit = 70
-
-    t.Placeholder = placeholder
-    t.Focus()
-
-    t.PromptStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-
-    return t
-}

@@ -32,6 +32,14 @@ func InitialModel() model {
             newInput("Enter your organization name"),
             "",
         },
+        listProjects: listModel{
+            list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
+            data: "",
+        },
+        listPullRequests: listModel{
+            list: list.New(nil, list.NewDefaultDelegate(), 0, 0),
+            data: "",
+        },
         mode: inputOrganization,
     }
 
@@ -74,6 +82,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 projects, err := getProjects(m.inputPatToken.data, m.inputOrganization.data)
 
                 if err != nil {
+                    fmt.Println(err)
                     return m, tea.Quit
                 }
 
@@ -86,7 +95,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
                 m.listProjects.list = list.New(projectsItems, list.NewDefaultDelegate(), 0, 0)
                 m.listProjects.list.Title= "Azure DevOps Projects" 
-                m.listProjects.list.SetSize(50, 50)
 
                 selectedItem := m.listProjects.list.SelectedItem()
                 m.listProjects.data = selectedItem.FilterValue() 
@@ -109,7 +117,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
                 m.listPullRequests.list = list.New(pullRequestsItems, list.NewDefaultDelegate(), 0, 0)
                 m.listPullRequests.list.Title= "Azure DevOps avaiable PullRequests" 
-                m.listPullRequests.list.SetSize(50, 50)
 
                 m.mode = listPullRequests
             }
@@ -135,6 +142,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 return m, cmd
             }
         }
+    case tea.WindowSizeMsg:
+        h, v := docStyle.GetFrameSize()
+        m.listProjects.list.SetSize(msg.Width-h, msg.Height-v)
+        m.listPullRequests.list.SetSize(msg.Width-h, msg.Height-v)
     }
 
     switch m.mode {

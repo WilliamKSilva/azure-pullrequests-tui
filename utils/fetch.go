@@ -8,16 +8,9 @@ import (
 	"net/http"
 )
 
-
-
 var client = &http.Client{}
 
 func GetRequest(url string, token string) (*string, error) {
-
-    if (url == "" || token == "") {
-        return nil, errors.New("missing arguments")
-    }
-    
 	req, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
@@ -29,6 +22,14 @@ func GetRequest(url string, token string) (*string, error) {
 	req.Header.Add("Authorization", authorizationString)
 
 	res, err := client.Do(req)
+
+    if res.StatusCode == 203 {
+        return nil, errors.New("Error: Invalid PAT (Personal Access Token)")
+    }
+
+    if res.StatusCode == 404 {
+        return nil, errors.New("Error: Azure DevOps organization name not found")
+    }
 
 	if err != nil {
 		return nil, err 

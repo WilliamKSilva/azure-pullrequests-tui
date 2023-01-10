@@ -12,7 +12,7 @@ Well is actualy very simple, execute the App and provide some data (I told that 
 Detailing a little more, you'll need to provide your Azure DevOps organization name
 and a PAT (Personal Access Token), you can learn how to get one in the official docs <a href="https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows">PAT Docs</a>
 
-After providing that information you will be asked to select a project and after that the Pull Requests list from that project
+After providing that information you will be asked to select a project and after a Pull Requests list from that project
 repositories will be displayed.
 
 Now you can just enjoy! If you want to refresh your Pull Requests list just press "r" in your keyboard.

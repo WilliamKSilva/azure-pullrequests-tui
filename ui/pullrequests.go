@@ -25,6 +25,7 @@ type PullRequests struct {
 
 func getPullRequests(token string, organization string, project string) (*PullRequests, error) {
     var pullRequests PullRequests
+    fmt.Printf(organization, project)
 
     url := fmt.Sprintf("https://dev.azure.com/%s/%s/_apis/git/pullrequests?api-version=7.0", organization, project)  
     patToken := fmt.Sprintf(":%s", token)

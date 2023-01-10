@@ -43,6 +43,9 @@ func InitialModel() model {
         mode: inputOrganization,
     }
 
+    m.listProjects.list.Title = "Select an Azure DevOps project"
+    m.listPullRequests.list.Title = "Azure DevOps project Pull Requests"
+
     return m
 }
 
@@ -82,7 +85,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 projects, err := getProjects(m.inputPatToken.data, m.inputOrganization.data)
 
                 if err != nil {
-                    fmt.Println(err)
                     return m, tea.Quit
                 }
 
@@ -93,14 +95,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     projectsItems = append(projectsItems, newProject)
                 }
 
-                m.listProjects.list = list.New(projectsItems, list.NewDefaultDelegate(), 0, 0)
-                m.listProjects.list.Title= "Azure DevOps Projects" 
+                m.listProjects.list.SetItems(projectsItems)
 
-                selectedItem := m.listProjects.list.SelectedItem()
-                m.listProjects.data = selectedItem.FilterValue() 
 
                 m.mode = listProjects 
             case listProjects:
+                selectedItem := m.listProjects.list.SelectedItem()
+                m.listProjects.data = selectedItem.FilterValue() 
+
                 pullRequests, err := getPullRequests(m.inputPatToken.data, m.inputOrganization.data, m.listProjects.data)
 
                 if err != nil {
@@ -115,8 +117,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                     pullRequestsItems = append(pullRequestsItems, newPullRequest)
                 }
 
-                m.listPullRequests.list = list.New(pullRequestsItems, list.NewDefaultDelegate(), 0, 0)
-                m.listPullRequests.list.Title= "Azure DevOps avaiable PullRequests" 
+                m.listPullRequests.list.SetItems(pullRequestsItems)
 
                 m.mode = listPullRequests
             }

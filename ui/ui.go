@@ -166,13 +166,13 @@ func (m model) View() string {
     switch m.mode {
     case inputOrganization:
         return fmt.Sprintf(
-            "Enter your Azure Devops organization name\n\n%s\n\n%s",
+            "\n\nEnter your Azure Devops organization name\n\n%s\n\n%s",
             m.inputOrganization.input.View(),
             "esc exits the terminal",
         ) + "\n"
     case inputPatToken:
         return fmt.Sprintf(
-            "Enter your Personal Access Token from Azure DevOps\n\n%s\n\n%s",
+            "\n\nEnter your Personal Access Token from Azure DevOps\n\n%s\n\n%s",
             m.inputPatToken.input.View(),
             "esc exits the terminal",
         ) + "\n"
